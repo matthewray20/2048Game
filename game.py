@@ -1,8 +1,5 @@
 
 
-# TODO:
-# - max score == 2^17 on 4x4 grid, scale for ML
-import time
 import numpy as np
 
 class Game:
@@ -115,6 +112,3 @@ class Game:
 if __name__ == "__main__":
     env = Game()
     env.play()
-    #print(env)
-    
-
