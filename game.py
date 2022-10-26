@@ -33,7 +33,7 @@ class Game:
         return new_array
 
 
-    def moveAndCombine(self, old, padLeftSide):
+    def move_and_combine(self, old, padLeftSide):
         no_zero_tiles = self.remove_zeros(old)
         iteration = range(0, no_zero_tiles.size - 1, 1)
         if padLeftSide: no_zero_tiles = np.flip(no_zero_tiles)
@@ -61,7 +61,7 @@ class Game:
         vals = {0: (0, True), 1: (1, True), 2: (0, False), 3:(1, False)}
         (axis, padLeftSide) = vals[action]
         # moving zeros and combining
-        updated_state = np.apply_along_axis(self.moveAndCombine, axis, self.state, padLeftSide=padLeftSide)
+        updated_state = np.apply_along_axis(self.move_and_combine, axis, self.state, padLeftSide=padLeftSide)
         return updated_state
     
 
@@ -74,21 +74,17 @@ class Game:
             self.state = next_state
             self.add_tiles([1, 2], probs=[0.9, 0.1])
             self.reward += 1
+        else:
+            self.reward -= 0.5
         return self.state / 17, self.reward, self.is_done() 
         
         
     def is_done(self):
-        game_over = True
+        done = True
         for i in range(self.dim):
             if not (np.equal(self.state, self.update_state(i))).all():
-                game_over = False
-        return game_over
-
-
-    def end(self):
-        print("Game Over!")
-        print(self)
-        exit()
+                done = False
+        return done
 
 
     def __str__(self):
@@ -112,8 +108,8 @@ class Game:
             #direction = int(input("Direction:"))
             #print('direction:', direction)
             self.step(action) 
-            print(self)       
-        self.end()
+        print("Game Over!")
+        print(self)
 
 
 if __name__ == "__main__":
