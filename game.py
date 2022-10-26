@@ -5,15 +5,15 @@
 import time
 import numpy as np
 
-class TwosGame:
-    def __init__(self):
-        self.dim = 4
-        self.reward = 0
-        self._board = np.zeros((self.dim, self.dim), dtype=int)
-        self.add_tiles([1, 2, 3], probs=[0.75, 0.20, 0.05], num=2)    
+class Game:
+    def __init__(self, dim=4):
+        self.dim = dim
+        self.reset()
 
     def reset(self):
-        self.__init__()    
+        self.reward = 0
+        self.state = np.zeros((self.dim, self.dim), dtype=int)
+        self.add_tiles([1, 2, 3], probs=[0.75, 0.20, 0.05], num=2)
 
     
     def add_tiles(self, tile_opts, probs=None, num=1):
@@ -23,13 +23,9 @@ class TwosGame:
             x = np.random.choice(xyrange)
             y = np.random.choice(xyrange)
             tile = np.random.choice(tile_opts, p=probs)
-            if self._board[x][y] == 0:
-                self._board[x][y] = tile
+            if self.state[x][y] == 0:
+                self.state[x][y] = tile
                 num_added += 1
-
-
-    def env_state(self):
-        return self._board
 
 
     def remove_zeros(self, array):
@@ -61,73 +57,68 @@ class TwosGame:
         return arr
     
 
-    def augment_board(self, direction):
+    def update_state(self, action):
         vals = {0: (0, True), 1: (1, True), 2: (0, False), 3:(1, False)}
-        (axis, padLeftSide) = vals[direction]
+        (axis, padLeftSide) = vals[action]
         # moving zeros and combining
-        updated_board = np.apply_along_axis(self.moveAndCombine, axis, self._board, padLeftSide=padLeftSide)
-        return updated_board
+        updated_state = np.apply_along_axis(self.moveAndCombine, axis, self.state, padLeftSide=padLeftSide)
+        return updated_state
     
 
-    def move(self, direction):
+    def step(self, direction):
         # directions: 0 = down, 1 = right, 2 = up, 3 = left
-        new_board = self.augment_board(direction)
+        next_state = self.update_state(direction)
         # if boards equal move not allowed -> dont add new tile
-        if not np.equal(new_board, self._board).all():
+        if not np.equal(next_state, self.state).all():
             # add new tile
-            self._board = new_board
+            self.state = next_state
             self.add_tiles([1, 2], probs=[0.9, 0.1])
             self.reward += 1
+        return self.state / 17, self.reward, self.is_done() 
         
         
-    def done(self):
-        full_board = not (self._board == 0).any()
+    def is_done(self):
         game_over = True
-        if game_over:
-            for i in range(4):
-                if not (np.equal(self._board, self.augment_board(i))).all():
-                    game_over = False
+        for i in range(self.dim):
+            if not (np.equal(self.state, self.update_state(i))).all():
+                game_over = False
         return game_over
 
 
     def end(self):
         print("Game Over!")
-        print(game)
+        print(self)
         exit()
 
 
     def __str__(self):
         printstring = f'\nscore: {self.reward}\n'
-        maxlen = len(str(2 ** np.max(self._board)))
+        maxlen = len(str(2 ** np.max(self.state)))
         printstring += '-' * (self.dim * maxlen + self.dim + 1) + '\n'
         for i in range(self.dim):
             printstring += '|'
             for j in range(self.dim):
-                print(self._board[i][j], 2 ** self._board[i][j])
-                tile = 2 ** self._board[i][j]
+                tile = 2 ** self.state[i][j]
                 printstring += f'{tile:{maxlen}}|'
             printstring += '\n' + '-' * (self.dim * maxlen + self.dim + 1) + '\n'
         return printstring
 
 
     def play(self):
-        while not self.done():
+        while not self.is_done():
             #print()
             #print(self)
-            direction = np.random.choice([0, 1, 2, 3,]) #
+            action = np.random.choice([0, 1, 2, 3,]) 
             #direction = int(input("Direction:"))
             #print('direction:', direction)
-            self.move(direction)        
-        #self.end()
-
-    
-    def get_ml_board(self):
-        return self._board / 17
+            self.step(action) 
+            print(self)       
+        self.end()
 
 
 if __name__ == "__main__":
-    game = TwosGame()
-    game.play()
-    print(game)
+    env = Game()
+    env.play()
+    #print(env)
     
 
