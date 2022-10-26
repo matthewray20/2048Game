@@ -91,7 +91,7 @@ class Game:
         for i in range(self.dim):
             printstring += '|'
             for j in range(self.dim):
-                tile = 2 ** self.state[i][j]
+                tile = 2 ** self.state[i][j] if self.state[i][j] != 0 else self.state[i][j]
                 printstring += f'{tile:{maxlen}}|'
             printstring += '\n' + '-' * (self.dim * maxlen + self.dim + 1) + '\n'
         return printstring
@@ -99,11 +99,10 @@ class Game:
 
     def play(self):
         while not self.is_done():
-            #print()
-            #print(self)
-            action = np.random.choice([0, 1, 2, 3,]) 
-            #direction = int(input("Direction:"))
-            #print('direction:', direction)
+            print()
+            print(self)
+            action = np.random.choice([0, 1, 2, 3]) 
+            action = int(input("Action:"))
             self.step(action) 
         print("Game Over!")
         print(self)
