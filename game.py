@@ -8,7 +8,7 @@ class Game:
         self.reset()
 
     def reset(self):
-        self.reward = 0
+        self.total_reward = 0
         self.state = np.zeros((self.dim, self.dim), dtype=int)
         self.add_tiles([1, 2, 3], probs=[0.75, 0.20, 0.05], num=2)
 
@@ -70,10 +70,15 @@ class Game:
             # add new tile
             self.state = next_state
             self.add_tiles([1, 2], probs=[0.9, 0.1])
-            self.reward += 1
+            self.total_reward += 1
+            i_reward = 1
         else:
-            self.reward -= 0.5
-        return self.state / 17, self.reward, self.is_done() 
+            self.total_reward -= 0.5
+            i_reward = -0.5
+        x = self.is_done() 
+        if x:
+            i_reward = -3
+        return self.state / 17, i_reward, x
         
         
     def is_done(self):
@@ -85,7 +90,7 @@ class Game:
 
 
     def __str__(self):
-        printstring = f'\nscore: {self.reward}\n'
+        printstring = f'\nscore: {self.total_reward}\n'
         maxlen = len(str(2 ** np.max(self.state)))
         printstring += '-' * (self.dim * maxlen + self.dim + 1) + '\n'
         for i in range(self.dim):
